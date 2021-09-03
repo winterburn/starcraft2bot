@@ -1,2 +1,4 @@
 .vscode
+.envrc
+.direnv
 sc2venv/*
