@@ -11,10 +11,10 @@ class WinterBot(sc2.BotAI):
 
     async def on_step(self, iteration):
         """Perform one gamestep"""
-        self.com_cent = self.units(constants.UnitTypeId.COMMANDCENTER).first
+        self.com_cent = self.townhalls.ready.first
         for worker in self.workers:
             if worker.is_idle:
-                await self.do(worker.gather(self.state.mineral_field.closest_to(self.com_cent)))
+                worker.gather(self.mineral_field.closest_to(self.com_cent))
         await self.saturate_mining()
         await self.build_supply()
 
@@ -30,5 +30,5 @@ class WinterBot(sc2.BotAI):
     async def saturate_mining(self):
         """Saturate the mining of minerals"""
         if self.com_cent.surplus_harvesters < 0:
-            if self.can_afford(constants.UnitTypeId.SCV) and self.com_cent.noqueue:
-                await self.do(self.com_cent.train(constants.UnitTypeId.SCV))
+            if self.can_afford(constants.UnitTypeId.SCV) and self.com_cent.is_idle:
+                self.com_cent.train(constants.UnitTypeId.SCV)
