@@ -29,7 +29,7 @@ class WinterBot(sc2.BotAI):
 
     async def military_buildings(self):
         """Check if there is missing military building and build it"""
-        if not self.get_building_count().get(UnitTypeId.BARRACKS):
+        if self.get_building_count().get(UnitTypeId.BARRACKS, 0) < 4:
             if self.can_afford(UnitTypeId.BARRACKS):
                 await self.build(UnitTypeId.BARRACKS, near=self.com_cent)
 
@@ -53,7 +53,6 @@ class WinterBot(sc2.BotAI):
         barracks = self.structures.filter(lambda u: u.type_id == UnitTypeId.BARRACKS)
 
         if barracks:
-            marine_count = self.get_military_count().get(UnitTypeId.MARINE)
-            if marine_count < 20 and self.can_afford(UnitTypeId.MARINE):
-                if barracks[0].is_idle:
-                    barracks[0].train(UnitTypeId.MARINE)
+            for instance in barracks:
+                if self.can_afford(UnitTypeId.MARINE) and instance.is_idle:
+                    instance.train(UnitTypeId.MARINE)
