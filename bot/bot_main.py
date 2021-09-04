@@ -29,9 +29,18 @@ class WinterBot(sc2.BotAI):
 
     async def military_buildings(self):
         """Check if there is missing military building and build it"""
-        if self.get_building_count().get(UnitTypeId.BARRACKS, 0) < 4:
+        barracks_count = self.get_building_count().get(UnitTypeId.BARRACKS, 0)
+        if barracks_count < 4:
             if self.can_afford(UnitTypeId.BARRACKS):
-                await self.build(UnitTypeId.BARRACKS, near=self.com_cent)
+                # special placement for first barracks
+                if barracks_count == 0:
+                    worker = self.workers.filter(lambda u: u.is_gathering).first
+                    print("barracks now", worker)
+                    worker.build(UnitTypeId.BARRACKS,
+                                 self.main_base_ramp.barracks_correct_placement)
+                else:
+                    await self.build(UnitTypeId.BARRACKS, near=self.com_cent,
+                                     placement_step=10)
 
     def get_building_count(self):
         """Count the buildings to dict"""
