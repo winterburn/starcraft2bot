@@ -2,6 +2,7 @@
 from collections import defaultdict
 import sc2
 from sc2.constants import UnitTypeId
+from bot.economy_handler import EconomyHandler
 
 
 class WinterBot(sc2.BotAI):
@@ -9,6 +10,10 @@ class WinterBot(sc2.BotAI):
     Bot for SC2 made by Winterburn
     """
     com_cent = None
+
+    def __init__(self, *args, **kwargs):
+        self.eco = EconomyHandler(self)
+        super().__init__(*args, **kwargs)
 
     async def on_step(self, iteration):
         """Perform one gamestep"""
@@ -19,23 +24,8 @@ class WinterBot(sc2.BotAI):
 
         await self.military_buildings()
         await self.train_marines()
-        await self.saturate_mining()
-        await self.build_supply()
-
-    async def build_supply(self):
-        """build supply if there is less than 1 supply left"""
-        if self.supply_left <= 1:
-            # check that we have no supply depots already building
-            if not self.already_pending(UnitTypeId.SUPPLYDEPOT):
-                pos = await self.find_placement(UnitTypeId.SUPPLYDEPOT,
-                                                self.com_cent.position)
-                await self.build(UnitTypeId.SUPPLYDEPOT, pos)
-
-    async def saturate_mining(self):
-        """Saturate the mining of minerals"""
-        if self.com_cent.surplus_harvesters < 0:
-            if self.can_afford(UnitTypeId.SCV) and self.com_cent.is_idle:
-                self.com_cent.train(UnitTypeId.SCV)
+        await self.eco.saturate_mining()
+        await self.eco.build_supply()
 
     async def military_buildings(self):
         """Check if there is missing military building and build it"""
